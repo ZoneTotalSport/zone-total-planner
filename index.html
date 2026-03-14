@@ -1,1 +1,146 @@
-<h1>TEST RÉUSSI</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zone Total Planner - PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barriecito&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --pop-cyan: #00E5FF;
+            --pop-yellow: #FFEA00;
+        }
+
+        body {
+            background-color: #0047AB; /* Bleu profond comme ton image */
+            background-image: radial-gradient(rgba(0,0,0,0.3) 15%, transparent 16%);
+            background-size: 25px 25px;
+            font-family: 'Barriecito', cursive;
+            margin: 0;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* En-tête Comic Style */
+        .header-comic {
+            background: var(--pop-yellow);
+            color: black;
+            border: 6px solid black;
+            transform: rotate(-1deg);
+            box-shadow: 10px 10px 0px #000;
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            z-index: 100;
+        }
+
+        .grid-gym {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            padding: 20px;
+            position: relative;
+            z-index: 50;
+        }
+
+        .day-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid var(--pop-yellow);
+            border-radius: 15px;
+            height: 450px;
+            padding: 10px;
+        }
+
+        .drop-zone {
+            height: 70px;
+            border: 2px dashed rgba(255,255,255,0.5);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bangers';
+            font-size: 1.2rem;
+        }
+
+        /* Ballons physiques */
+        .ballon-groupe {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid black;
+            background: var(--pop-yellow);
+            color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bangers';
+            font-size: 1.5rem;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.4);
+            cursor: grab;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-comic">
+        <h1 class="text-5xl font-bangers">ZONE TOTAL PLANNER</h1>
+        <p class="text-xl">Vibe: Mr. Roots Edition</p>
+    </header>
+
+    <div class="grid-gym">
+        <div class="day-box"><h2 class="font-bangers text-2xl text-center">Lundi</h2><div class="drop-zone">P1</div><div class="drop-zone">P2</div><div class="drop-zone">P3</div></div>
+        <div class="day-box"><h2 class="font-bangers text-2xl text-center">Mardi</h2><div class="drop-zone">P1</div><div class="drop-zone">P2</div><div class="drop-zone">P3</div></div>
+        <div class="day-box"><h2 class="font-bangers text-2xl text-center">Mercredi</h2><div class="drop-zone">P1</div><div class="drop-zone">P2</div><div class="drop-zone">P3</div></div>
+        <div class="day-box"><h2 class="font-bangers text-2xl text-center">Jeudi</h2><div class="drop-zone">P1</div><div class="drop-zone">P2</div><div class="drop-zone">P3</div></div>
+        <div class="day-box"><h2 class="font-bangers text-2xl text-center">Vendredi</h2><div class="drop-zone">P1</div><div class="drop-zone">P2</div><div class="drop-zone">P3</div></div>
+    </div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
+        const engine = Engine.create();
+        const world = engine.world;
+
+        // Sol et murs
+        const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 30, window.innerWidth, 60, { isStatic: true });
+        const wallLeft = Bodies.rectangle(-30, window.innerHeight/2, 60, window.innerHeight, { isStatic: true });
+        const wallRight = Bodies.rectangle(window.innerWidth + 30, window.innerHeight/2, 60, window.innerHeight, { isStatic: true });
+        Composite.add(world, [ground, wallLeft, wallRight]);
+
+        // Groupes
+        const groups = ['101', '202', '303', '404', '505', '606'];
+        groups.forEach((id, i) => {
+            const ball = Bodies.circle(100 + (i * 90), 50, 35, { restitution: 0.7 });
+            const el = document.createElement('div');
+            el.className = 'ballon-groupe';
+            el.innerText = id;
+            document.body.appendChild(el);
+            ball.element = el;
+            Composite.add(world, ball);
+        });
+
+        (function update() {
+            const bodies = Composite.allBodies(world);
+            bodies.forEach(b => {
+                if(b.element) {
+                    b.element.style.left = `${b.position.x - 35}px`;
+                    b.element.style.top = `${b.position.y - 35}px`;
+                    b.element.style.transform = `rotate(${b.angle}rad)`;
+                }
+            });
+            Engine.update(engine);
+            requestAnimationFrame(update);
+        })();
+
+        const mouse = Mouse.create(document.body);
+        const mc = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.2, render: { visible: false } } });
+        Composite.add(world, mc);
+    </script>
+</body>
+</html>
